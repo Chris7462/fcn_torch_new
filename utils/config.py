@@ -47,16 +47,6 @@ class ConfigDict(dict):
         except KeyError:
             raise AttributeError(f"'ConfigDict' object has no attribute '{key}'")
 
-    def to_dict(self):
-        """Convert back to plain dict recursively"""
-        result = {}
-        for key, value in self.items():
-            if isinstance(value, ConfigDict):
-                result[key] = value.to_dict()
-            else:
-                result[key] = value
-        return result
-
 
 class Config:
     """
@@ -128,10 +118,6 @@ class Config:
     def filename(self):
         """Return the config filename"""
         return self._filename
-
-    def to_dict(self):
-        """Convert config to plain dict"""
-        return self._cfg_dict.to_dict()
 
     def __getattr__(self, name):
         """Allow attribute-style access: cfg.batch_size"""
