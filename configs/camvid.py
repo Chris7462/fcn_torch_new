@@ -3,8 +3,33 @@ CamVid Dataset Training Configuration
 11 classes for semantic segmentation
 """
 
+
+# Transform pipelines (CONFIG-DRIVEN!)
+train_processes = [
+    dict(type='Resize', height=360, width=480),
+    dict(type='CenterCrop', height=352, width=480),
+    dict(type='HorizontalFlip', p=0.5),
+    dict(type='ColorJitter', brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1, p=0.5),
+    dict(type='Normalize', mean=[0.41, 0.42, 0.43], std=[0.28, 0.27, 0.29]),
+    dict(type='ToTensor')
+]
+
+val_processes = [
+    dict(type='Resize', height=360, width=480),
+    dict(type='CenterCrop', height=352, width=480),
+    dict(type='Normalize', mean=[0.41, 0.42, 0.43], std=[0.28, 0.27, 0.29]),
+    dict(type='ToTensor')
+]
+
+test_processes = [
+    dict(type='Resize', height=360, width=480),
+    dict(type='CenterCrop', height=352, width=480),
+    dict(type='Normalize', mean=[0.41, 0.42, 0.43], std=[0.28, 0.27, 0.29]),
+    dict(type='ToTensor')
+]
+
 # Dataset paths
-dataset_root = './CamVid'
+dataset_path = './data/segmentation/CamVid/'
 dataset = dict(
     train=dict(
         type='CamVid',
@@ -12,6 +37,7 @@ dataset = dict(
         label_dir='./data/segmentation/CamVid/LabeledApproved_full',
         split_file='./data/segmentation/CamVid/splits/train.txt',
         dataset_info_path='./data/segmentation/CamVid/splits/dataset_info.json',
+        processes=train_processes
     ),
     val=dict(
         type='CamVid',
@@ -19,6 +45,7 @@ dataset = dict(
         label_dir='./data/segmentation/CamVid/LabeledApproved_full',
         split_file='./data/segmentation/CamVid/splits/val.txt',
         dataset_info_path='./data/segmentation/CamVid/splits/dataset_info.json',
+        processes=val_processes
     ),
     test=dict(
         type='CamVid',
@@ -26,18 +53,19 @@ dataset = dict(
         label_dir='./data/segmentation/CamVid/LabeledApproved_full',
         split_file='./data/segmentation/CamVid/splits/test.txt',
         dataset_info_path='./data/segmentation/CamVid/splits/dataset_info.json',
+        processes=test_processes
     )
 )
 
-# Model configuration
-net = dict(
-    type='FCNs',
-)
+#   # Model configuration
+#   net = dict(
+#       type='FCNs',
+#   )
 
-backbone = dict(
-    type='VGG16',
-    pretrained=True,
-)
+#   backbone = dict(
+#       type='VGG16',
+#       pretrained=True,
+#   )
 
 #   decoder = dict(
 #       type='FCNHead',
