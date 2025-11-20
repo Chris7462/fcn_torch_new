@@ -40,7 +40,7 @@ class CamVid(BaseDataset):
         >>> )
     """
 
-    def __init__(self, img_dir, label_dir, split_file, dataset_info_path, 
+    def __init__(self, img_dir, label_dir, split_file, dataset_info_path,
                  processes=None, cfg=None):
         """
         Initialize CamVid dataset.
@@ -142,54 +142,30 @@ class CamVid(BaseDataset):
         """
         Load raw image and label for CamVid.
 
-        CamVid has a specific file structure:
-            - Images: {img_dir}/{city}/{basename}_L.png
-            - Labels: {label_dir}/{city}/{basename}_L.png (RGB color-coded)
-
         Args:
             idx: Index of the sample to load
 
         Returns:
-            dict: Sample dict with 'img', 'mask' (if training), 'filename', 'img_path'
+            dict: Sample dict with 'img', 'mask' (if training), 'filename'
         """
         data_info = self.data_infos[idx]
         filename = data_info['filename']
 
-        # Parse CamVid filename format: city/basename
-        # Example: aachen/aachen_000000_000019
-        parts = filename.split('/')
-        if len(parts) == 2:
-            city, basename = parts
-        else:
-            # Fallback: treat as single filename
-            city = ''
-            basename = filename
-
-        # Construct image path
-        img_filename = f'{basename}.png'
-        if city:
-            img_path = os.path.join(self.img_dir, city, img_filename)
-        else:
-            img_path = os.path.join(self.img_dir, img_filename)
-
-        # Load image
+        # Load raw image
+        img_path = os.path.join(self.img_dir, filename)
         image = np.array(Image.open(img_path).convert('RGB'))
 
         # Prepare sample dict
         sample = {
             'img': image,
-            'filename': filename,
-            'img_path': img_path
+            'filename': filename
         }
 
         # Load mask if training
         if self.is_training:
-            # Construct label path
-            label_filename = f'{basename}_L.png'
-            if city:
-                label_path = os.path.join(self.label_dir, city, label_filename)
-            else:
-                label_path = os.path.join(self.label_dir, label_filename)
+            # Label filename: replace .png with _L.png
+            label_filename = filename[:-4] + '_L.png'
+            label_path = os.path.join(self.label_dir, label_filename)
 
             # Load RGB mask and convert to class indices
             label_rgb = np.array(Image.open(label_path).convert('RGB'))

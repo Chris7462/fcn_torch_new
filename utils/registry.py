@@ -78,7 +78,7 @@ class Registry:
         return f"Registry(name='{self._name}', items={list(self._registry.keys())})"
 
 
-def build_from_cfg(cfg, registry, **default_kwargs):
+def build_from_cfg(config, registry, **default_kwargs):
     """
     Build an object from a config dict.
 
@@ -92,18 +92,18 @@ def build_from_cfg(cfg, registry, **default_kwargs):
 
     Example:
         >>> cfg = {'type': 'ResNet', 'depth': 50}
-        >>> model = build_from_cfg(cfg, MODELS, pretrained=True)
+        >>> model = build_from_cfg(config, MODELS, pretrained=True)
         >>> # Calls: ResNet(depth=50, pretrained=True)
     """
-    if not isinstance(cfg, dict):
-        raise TypeError(f"cfg must be a dict, got {type(cfg)}")
+    if not isinstance(config, dict):
+        raise TypeError(f"cfg must be a dict, got {type(config)}")
 
-    if 'type' not in cfg:
+    if 'type' not in config:
         raise KeyError("Config dict must contain 'type' key")
 
     # Copy config to avoid modifying original
-    cfg = cfg.copy()
-    class_name = cfg.pop('type')
+    config = config.copy()
+    class_name = config.pop('type')
 
     if not isinstance(class_name, str):
         raise TypeError(f"'type' must be a string, got {type(class_name)}")
@@ -117,7 +117,7 @@ def build_from_cfg(cfg, registry, **default_kwargs):
         )
 
     # Merge kwargs: default_kwargs are overridden by cfg
-    kwargs = {**default_kwargs, **cfg}
+    kwargs = {**default_kwargs, **config}
 
     # Instantiate and return
     try:
@@ -125,6 +125,6 @@ def build_from_cfg(cfg, registry, **default_kwargs):
     except TypeError as e:
         raise TypeError(
             f"Error instantiating {class_name}: {e}\n"
-            f"Config: {cfg}\n"
+            f"Config: {config}\n"
             f"Default kwargs: {default_kwargs}"
         )

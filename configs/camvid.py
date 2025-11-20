@@ -29,30 +29,30 @@ test_processes = [
 ]
 
 # Dataset paths
-dataset_path = './data/segmentation/CamVid/'
+dataset_path = './data/CamVid/'
 dataset = dict(
     train=dict(
         type='CamVid',
-        img_dir='./data/segmentation/CamVid/701_StillsRaw_full',
-        label_dir='./data/segmentation/CamVid/LabeledApproved_full',
-        split_file='./data/segmentation/CamVid/splits/train.txt',
-        dataset_info_path='./data/segmentation/CamVid/splits/dataset_info.json',
+        img_dir='./data/CamVid/701_StillsRaw_full',
+        label_dir='./data/CamVid/LabeledApproved_full',
+        split_file='./data/CamVid/splits/train.txt',
+        dataset_info_path='./data/CamVid/splits/dataset_info.json',
         processes=train_processes
     ),
     val=dict(
         type='CamVid',
-        img_dir='./data/segmentation/CamVid/701_StillsRaw_full',
-        label_dir='./data/segmentation/CamVid/LabeledApproved_full',
-        split_file='./data/segmentation/CamVid/splits/val.txt',
-        dataset_info_path='./data/segmentation/CamVid/splits/dataset_info.json',
+        img_dir='./data/CamVid/701_StillsRaw_full',
+        label_dir='./data/CamVid/LabeledApproved_full',
+        split_file='./data/CamVid/splits/val.txt',
+        dataset_info_path='./data/CamVid/splits/dataset_info.json',
         processes=val_processes
     ),
     test=dict(
         type='CamVid',
-        img_dir='./data/segmentation/CamVid/701_StillsRaw_full',
-        label_dir='./data/segmentation/CamVid/LabeledApproved_full',
-        split_file='./data/segmentation/CamVid/splits/test.txt',
-        dataset_info_path='./data/segmentation/CamVid/splits/dataset_info.json',
+        img_dir='./data/CamVid/701_StillsRaw_full',
+        label_dir='./data/CamVid/LabeledApproved_full',
+        split_file='./data/CamVid/splits/test.txt',
+        dataset_info_path='./data/CamVid/splits/dataset_info.json',
         processes=test_processes
     )
 )
@@ -97,9 +97,9 @@ dataset = dict(
 #       std=[0.229, 0.224, 0.225]     # Will be overridden by dataset_info.json
 #   )
 
-#   # Training hyperparameters
-#   batch_size = 16
-#   workers = 4
+# Training hyperparameters
+batch_size = 16
+workers = 4
 #   num_classes = 11
 #   ignore_label = 255
 #   epochs = 200
