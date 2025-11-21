@@ -33,8 +33,8 @@ class ConfigDict(dict):
         """Allow attribute-style access: cfg.key"""
         try:
             return self[key]
-        except KeyError:
-            raise AttributeError(f"'ConfigDict' object has no attribute '{key}'")
+        except KeyError as exc:
+            raise AttributeError(f"'ConfigDict' object has no attribute '{key}'") from exc
 
     def __setattr__(self, key, value):
         """Allow attribute-style setting: cfg.key = value"""
@@ -44,8 +44,8 @@ class ConfigDict(dict):
         """Allow attribute-style deletion: del cfg.key"""
         try:
             del self[key]
-        except KeyError:
-            raise AttributeError(f"'ConfigDict' object has no attribute '{key}'")
+        except KeyError as exc:
+            raise AttributeError(f"'ConfigDict' object has no attribute '{key}'") from exc
 
 
 class Config:
@@ -95,21 +95,19 @@ class Config:
             raise ValueError("Only .py config files are supported")
 
         # Read the config file
-        with open(filename, 'r') as f:
+        with open(filename, 'r', encoding='utf-8') as f:
             config_text = f.read()
 
         # Execute the config file in a namespace
         namespace = {}
         try:
-            exec(config_text, namespace)
+            exec(config_text, namespace)  # pylint: disable=exec-used
         except Exception as e:
-            raise RuntimeError(f"Error executing config file {filename}: {e}")
+            raise RuntimeError(f"Error executing config file {filename}: {e}") from e
 
         # Extract config variables (exclude builtins and imports)
         cfg_dict = {
-            key: value
-            for key, value in namespace.items()
-            if not key.startswith('_')
+            key: value for key, value in namespace.items() if not key.startswith('_')
         }
 
         return cls(cfg_dict, filename=filename)
@@ -123,8 +121,8 @@ class Config:
         """Allow attribute-style access: cfg.batch_size"""
         try:
             return getattr(self._cfg_dict, name)
-        except AttributeError:
-            raise AttributeError(f"'Config' object has no attribute '{name}'")
+        except AttributeError as exc:
+            raise AttributeError(f"'Config' object has no attribute '{name}'") from exc
 
     def __setattr__(self, name, value):
         """Allow attribute-style setting: cfg.batch_size = 16"""
