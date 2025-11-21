@@ -1,195 +1,201 @@
 """
-Unit tests for utils/registry.py
+Unit tests for utils/config.py
 """
 
+import os
+import tempfile
 import pytest
-from utils.registry import Registry, build_from_cfg
+from utils.config import Config, ConfigDict
 
 
-# Fixtures
-@pytest.fixture
-def empty_registry():
-    """Provides an empty registry"""
-    return Registry('models')
+# ConfigDict tests
+class TestConfigDict:
+    """Tests for ConfigDict class"""
+
+    def test_initialization_empty(self):
+        """Test empty ConfigDict creation"""
+        cfg = ConfigDict()
+        assert len(cfg) == 0
+
+    def test_initialization_with_data(self):
+        """Test ConfigDict creation with initial data"""
+        cfg = ConfigDict({'a': 1, 'b': 2})
+        assert cfg['a'] == 1
+        assert cfg['b'] == 2
+
+    def test_nested_dict_conversion(self):
+        """Test nested dicts are converted to ConfigDict"""
+        cfg = ConfigDict({'outer': {'inner': 1}})
+        assert isinstance(cfg['outer'], ConfigDict)
+        assert cfg['outer']['inner'] == 1
+
+    def test_attribute_access_get(self):
+        """Test attribute-style access for getting values"""
+        cfg = ConfigDict({'key': 'value'})
+        assert cfg.key == 'value'
+
+    def test_attribute_access_set(self):
+        """Test attribute-style access for setting values"""
+        cfg = ConfigDict()
+        cfg.key = 'value'
+        assert cfg['key'] == 'value'
+
+    def test_attribute_access_nested(self):
+        """Test nested attribute access"""
+        cfg = ConfigDict({'a': {'b': {'c': 3}}})
+        assert cfg.a.b.c == 3
+
+    def test_attribute_access_missing_raises_error(self):
+        """Test accessing missing attribute raises AttributeError"""
+        cfg = ConfigDict({'a': 1})
+        with pytest.raises(AttributeError, match="has no attribute 'missing'"):
+            _ = cfg.missing
+
+    def test_delete_attribute(self):
+        """Test attribute deletion"""
+        cfg = ConfigDict({'a': 1, 'b': 2})
+        del cfg.a
+        assert 'a' not in cfg
+        assert 'b' in cfg
+
+    def test_delete_missing_attribute_raises_error(self):
+        """Test deleting missing attribute raises AttributeError"""
+        cfg = ConfigDict()
+        with pytest.raises(AttributeError, match="has no attribute 'missing'"):
+            del cfg.missing
 
 
-@pytest.fixture
-def sample_registry():
-    """Provides a registry with pre-registered classes"""
-    registry = Registry('models')
+# Config tests
+class TestConfig:
+    """Tests for Config class"""
 
-    @registry.register_module
-    class ModelA:
-        def __init__(self, param1=10):
-            self.param1 = param1
+    @pytest.fixture
+    def sample_config_file(self):
+        """Create a temporary config file"""
+        content = '''
+# Sample config
+batch_size = 16
+learning_rate = 0.001
 
-    @registry.register_module
-    class ModelB:
-        def __init__(self, param1, param2=20):
-            self.param1 = param1
-            self.param2 = param2
+optimizer = dict(
+    type='SGD',
+    lr=0.01,
+    momentum=0.9
+)
 
-    return registry
+dataset = dict(
+    train=dict(type='ImageNet', split='train'),
+    val=dict(type='ImageNet', split='val')
+)
+'''
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(content)
+            f.flush()
+            yield f.name
+        os.unlink(f.name)
 
+    def test_from_file(self, sample_config_file):
+        """Test loading config from file"""
+        cfg = Config.from_file(sample_config_file)
+        assert cfg.batch_size == 16
+        assert cfg.learning_rate == 0.001
 
-# Registry class tests
-class TestRegistry:
-    """Tests for Registry class"""
+    def test_from_file_not_found(self):
+        """Test FileNotFoundError for missing file"""
+        with pytest.raises(FileNotFoundError, match="Config file not found"):
+            Config.from_file('nonexistent.py')
 
-    def test_initialization(self, empty_registry):
-        """Test registry creation with a name"""
-        assert empty_registry.name == 'models'
-        assert empty_registry.module_dict == {}
+    def test_from_file_wrong_extension(self):
+        """Test ValueError for non-.py files"""
+        with tempfile.NamedTemporaryFile(suffix='.yaml', delete=False) as f:
+            f.write(b'key: value')
+            f.flush()
+            try:
+                with pytest.raises(ValueError, match="Only .py config files"):
+                    Config.from_file(f.name)
+            finally:
+                os.unlink(f.name)
 
-    def test_name_property(self, empty_registry):
-        """Test name property returns correct name"""
-        assert empty_registry.name == 'models'
+    def test_attribute_access(self, sample_config_file):
+        """Test attribute-style access"""
+        cfg = Config.from_file(sample_config_file)
+        assert cfg.batch_size == 16
+        assert cfg.optimizer.type == 'SGD'
+        assert cfg.optimizer.lr == 0.01
 
-    def test_module_dict_property(self, empty_registry):
-        """Test module_dict property returns registry dictionary"""
-        assert isinstance(empty_registry.module_dict, dict)
-        assert len(empty_registry.module_dict) == 0
+    def test_nested_attribute_access(self, sample_config_file):
+        """Test deeply nested attribute access"""
+        cfg = Config.from_file(sample_config_file)
+        assert cfg.dataset.train.type == 'ImageNet'
+        assert cfg.dataset.train.split == 'train'
 
-    def test_register_single_class(self, empty_registry):
-        """Test successful class registration using decorator"""
-        @empty_registry.register_module
-        class TestModel:
-            pass
+    def test_dict_access(self, sample_config_file):
+        """Test dict-style access"""
+        cfg = Config.from_file(sample_config_file)
+        assert cfg['batch_size'] == 16
+        assert cfg['optimizer']['type'] == 'SGD'
 
-        assert 'TestModel' in empty_registry.module_dict
-        assert empty_registry.module_dict['TestModel'] is TestModel
+    def test_set_attribute(self, sample_config_file):
+        """Test setting attributes"""
+        cfg = Config.from_file(sample_config_file)
+        cfg.batch_size = 32
+        assert cfg.batch_size == 32
 
-    def test_register_multiple_classes(self, empty_registry):
-        """Test multiple classes can be registered"""
-        @empty_registry.register_module
-        class Model1:
-            pass
+    def test_set_item(self, sample_config_file):
+        """Test setting items dict-style"""
+        cfg = Config.from_file(sample_config_file)
+        cfg['batch_size'] = 64
+        assert cfg['batch_size'] == 64
 
-        @empty_registry.register_module
-        class Model2:
-            pass
+    def test_contains(self, sample_config_file):
+        """Test 'in' operator"""
+        cfg = Config.from_file(sample_config_file)
+        assert 'batch_size' in cfg
+        assert 'nonexistent' not in cfg
 
-        assert len(empty_registry.module_dict) == 2
-        assert 'Model1' in empty_registry.module_dict
-        assert 'Model2' in empty_registry.module_dict
+    def test_missing_attribute_raises_error(self, sample_config_file):
+        """Test accessing missing attribute raises AttributeError"""
+        cfg = Config.from_file(sample_config_file)
+        with pytest.raises(AttributeError, match="has no attribute 'missing'"):
+            _ = cfg.missing
 
-    def test_register_duplicate_raises_error(self, empty_registry):
-        """Test duplicate registration raises KeyError"""
-        @empty_registry.register_module
-        class DuplicateModel:
-            pass
+    def test_filename_property(self, sample_config_file):
+        """Test filename property"""
+        cfg = Config.from_file(sample_config_file)
+        assert cfg.filename == sample_config_file
 
-        with pytest.raises(KeyError, match="'DuplicateModel' is already registered"):
-            @empty_registry.register_module
-            class DuplicateModel:
-                pass
+    def test_repr(self, sample_config_file):
+        """Test __repr__ output"""
+        cfg = Config.from_file(sample_config_file)
+        repr_str = repr(cfg)
+        assert 'Config' in repr_str
+        assert 'batch_size' in repr_str
 
-    def test_register_non_class_raises_error(self, empty_registry):
-        """Test registering non-class objects raises TypeError"""
-        with pytest.raises(TypeError, match="register_module expects a class"):
-            empty_registry.register_module("not a class")
+    def test_str(self, sample_config_file):
+        """Test __str__ output"""
+        cfg = Config.from_file(sample_config_file)
+        str_output = str(cfg)
+        assert 'batch_size' in str_output
+        assert '16' in str_output
 
-        with pytest.raises(TypeError, match="register_module expects a class"):
-            empty_registry.register_module(123)
+    def test_init_requires_dict(self):
+        """Test Config.__init__ requires dict"""
+        with pytest.raises(TypeError, match="cfg_dict must be a dict"):
+            Config("not a dict")
 
-    def test_get_existing_class(self, sample_registry):
-        """Test get() returns correct class"""
-        cls = sample_registry.get('ModelA')
-        assert cls is not None
-        assert cls.__name__ == 'ModelA'
-
-    def test_get_non_existent_class(self, sample_registry):
-        """Test get() returns None for non-existent key"""
-        cls = sample_registry.get('NonExistentModel')
-        assert cls is None
-
-    def test_repr(self, sample_registry):
-        """Test __repr__() output"""
-        repr_str = repr(sample_registry)
-        assert "Registry" in repr_str
-        assert "name='models'" in repr_str
-        assert "ModelA" in repr_str
-        assert "ModelB" in repr_str
-
-
-# build_from_cfg function tests
-class TestBuildFromCfg:
-    """Tests for build_from_cfg function"""
-
-    def test_basic_instantiation(self, sample_registry):
-        """Test successful object instantiation from config dict"""
-        cfg = {'type': 'ModelA', 'param1': 100}
-        obj = build_from_cfg(cfg, sample_registry)
-
-        assert obj is not None
-        assert obj.param1 == 100
-
-    def test_config_params_passed(self, sample_registry):
-        """Test config params are passed to constructor"""
-        cfg = {'type': 'ModelB', 'param1': 50, 'param2': 60}
-        obj = build_from_cfg(cfg, sample_registry)
-
-        assert obj.param1 == 50
-        assert obj.param2 == 60
-
-    def test_default_kwargs(self, sample_registry):
-        """Test default_kwargs work correctly"""
-        cfg = {'type': 'ModelA'}
-        obj = build_from_cfg(cfg, sample_registry, param1=200)
-
-        assert obj.param1 == 200
-
-    def test_config_overrides_defaults(self, sample_registry):
-        """Test config overrides default_kwargs"""
-        cfg = {'type': 'ModelA', 'param1': 300}
-        obj = build_from_cfg(cfg, sample_registry, param1=200)
-
-        # Config value should override default
-        assert obj.param1 == 300
-
-    def test_original_config_not_modified(self, sample_registry):
-        """Test that original config dict is not modified"""
-        cfg = {'type': 'ModelA', 'param1': 100}
-        original_cfg = cfg.copy()
-
-        build_from_cfg(cfg, sample_registry)
-
-        assert cfg == original_cfg
-        assert 'type' in cfg
-
-    def test_non_dict_config_raises_error(self, sample_registry):
-        """Test TypeError when cfg is not a dict"""
-        with pytest.raises(TypeError, match="cfg must be a dict"):
-            build_from_cfg("not a dict", sample_registry)
-
-        with pytest.raises(TypeError, match="cfg must be a dict"):
-            build_from_cfg([1, 2, 3], sample_registry)
-
-    def test_missing_type_key_raises_error(self, sample_registry):
-        """Test KeyError when 'type' key is missing"""
-        cfg = {'param1': 100}
-
-        with pytest.raises(KeyError, match="Config dict must contain 'type' key"):
-            build_from_cfg(cfg, sample_registry)
-
-    def test_non_string_type_raises_error(self, sample_registry):
-        """Test TypeError when 'type' is not a string"""
-        cfg = {'type': 123, 'param1': 100}
-
-        with pytest.raises(TypeError, match="'type' must be a string"):
-            build_from_cfg(cfg, sample_registry)
-
-    def test_class_not_found_raises_error(self, sample_registry):
-        """Test KeyError when class not found in registry"""
-        cfg = {'type': 'NonExistentModel', 'param1': 100}
-
-        with pytest.raises(KeyError, match="'NonExistentModel' not found in 'models' registry"):
-            build_from_cfg(cfg, sample_registry)
-
-    def test_instantiation_error(self, sample_registry):
-        """Test TypeError when instantiation fails with wrong params"""
-        # ModelB requires param1, but we don't provide it
-        cfg = {'type': 'ModelB'}
-
-        with pytest.raises(TypeError, match="Error instantiating ModelB"):
-            build_from_cfg(cfg, sample_registry)
+    def test_config_with_imports(self):
+        """Test config file with imports works"""
+        content = '''
+import os
+data_root = os.path.join('data', 'images')
+batch_size = 8
+'''
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(content)
+            f.flush()
+            try:
+                cfg = Config.from_file(f.name)
+                assert cfg.batch_size == 8
+                assert 'images' in cfg.data_root
+            finally:
+                os.unlink(f.name)

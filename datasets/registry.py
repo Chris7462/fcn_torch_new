@@ -3,20 +3,20 @@ Dataset Registry
 Registry system for datasets and dataloader builders
 """
 
-from utils import Registry, build_from_cfg
 import torch
+from utils import Registry, build_from_cfg
 
 
 DATASETS = Registry('datasets')
 
 
-def build_dataset(split_cfg, cfg):
+def build_dataset(split_cfg, cfg=None):
     """
     Build dataset from config.
 
     Args:
         split_cfg: Dataset split config (e.g., cfg.dataset.train)
-        cfg: Global config object
+        cfg: Global config object (optional)
 
     Returns:
         Dataset instance
@@ -24,7 +24,8 @@ def build_dataset(split_cfg, cfg):
     Example:
         >>> train_dataset = build_dataset(cfg.dataset.train, cfg)
     """
-    return build_from_cfg(split_cfg, DATASETS, cfg=cfg)
+    default_args = {'cfg': cfg} if cfg is not None else None
+    return build_from_cfg(split_cfg, DATASETS, default_args=default_args)
 
 
 def build_dataloader(split_cfg, cfg, is_train=True):

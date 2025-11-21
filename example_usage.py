@@ -48,13 +48,13 @@ DATASETS = Registry('datasets')
 #           self.momentum = momentum
 #           print(f"SGD optimizer: lr={lr}, momentum={momentum}")
 
-#   @DATASETS.register_module
-#   class CamVid:
-#       def __init__(self, img_dir, label_dir, split_file, dataset_info_path):
-#           self.img_dir = img_dir
-#           self.label_dir = label_dir
-#           self.split_file = split_file
-#           print(f"CamVid dataset created with split: {split_file}")
+@DATASETS.register_module
+class CamVid:
+    def __init__(self, img_dir, label_dir, split_file, dataset_info_path):
+        self.img_dir = img_dir
+        self.label_dir = label_dir
+        self.split_file = split_file
+        print(f"CamVid dataset created with split: {split_file}")
 
 # Step 3: Load the config file
 cfg = Config.from_file('configs/camvid.py')
@@ -83,3 +83,5 @@ test_dataset = build_from_cfg(cfg.dataset.test, DATASETS)
 #   print(f"Backbone pretrained: {backbone.pretrained}")
 #   print(f"Optimizer LR: {optimizer.lr}")
 #   print(f"Train dataset split: {train_dataset.split_file}")
+
+cfg = Config({'batch_size': 16}, filename=None)
