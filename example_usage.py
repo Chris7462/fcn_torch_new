@@ -6,10 +6,10 @@ from datasets import build_dataset, build_dataloader
 cfg = Config.from_file('configs/camvid.py')
 
 # Build datasets
-train_dataset = build_dataset(cfg.dataset.train, cfg)
+train_dataset = build_dataset(cfg.dataset.train)
 
 # Build dataloaders (recommended for training)
-train_loader = build_dataloader(cfg.dataset.train, cfg, is_train=True)
+train_loader = build_dataloader(cfg.dataset.train, cfg.batch_size, cfg.num_workers, is_train=True)
 
 
 

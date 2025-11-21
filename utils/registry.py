@@ -92,21 +92,20 @@ class Registry:
         return f"Registry(name='{self._name}', items={list(self._module_dict.keys())})"
 
 
-def build_from_cfg(cfg, registry, default_args=None):
+def build_from_cfg(cfg, registry):
     """
     Build a module from config dict.
 
     Args:
         cfg (dict): Config dict with 'type' key specifying the class name.
         registry (Registry): Registry instance containing the class.
-        default_args (dict, optional): Default initialization arguments (cfg values override these).
 
     Returns:
         object: Instantiated object.
 
     Example:
         >>> cfg = {'type': 'ResNet', 'depth': 50}
-        >>> model = build_from_cfg(cfg, MODELS, default_args={'pretrained': True})
+        >>> model = build_from_cfg(cfg, MODELS)
         >>> # Calls: ResNet(depth=50, pretrained=True)
     """
     if not isinstance(cfg, dict):
@@ -114,9 +113,6 @@ def build_from_cfg(cfg, registry, default_args=None):
 
     if 'type' not in cfg:
         raise KeyError("cfg must contain the key 'type'")
-
-    if default_args is not None and not isinstance(default_args, dict):
-        raise TypeError(f'default_args must be a dict or None, but got {type(default_args)}')
 
     # Copy config to avoid modifying original
     args = cfg.copy()
@@ -132,10 +128,5 @@ def build_from_cfg(cfg, registry, default_args=None):
             f"'{obj_type}' is not in the '{registry.name}' registry. "
             f"Available: {list(registry.module_dict.keys())}"
         )
-
-    # Merge default_args (config values take priority via setdefault)
-    if default_args is not None:
-        for name, value in default_args.items():
-            args.setdefault(name, value)
 
     return obj_cls(**args)

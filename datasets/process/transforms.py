@@ -26,12 +26,12 @@ class Resize:
     def __call__(self, sample):
         """Apply resize to image and mask (if present)"""
         if 'mask' in sample:
-            transformed = self.transform(image=sample['img'], mask=sample['mask'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'], mask=sample['mask'])
+            sample['image'] = transformed['image']
             sample['mask'] = transformed['mask']
         else:
-            transformed = self.transform(image=sample['img'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'])
+            sample['image'] = transformed['image']
         return sample
 
     def __repr__(self):
@@ -56,12 +56,12 @@ class CenterCrop:
     def __call__(self, sample):
         """Apply center crop to image and mask (if present)"""
         if 'mask' in sample:
-            transformed = self.transform(image=sample['img'], mask=sample['mask'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'], mask=sample['mask'])
+            sample['image'] = transformed['image']
             sample['mask'] = transformed['mask']
         else:
-            transformed = self.transform(image=sample['img'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'])
+            sample['image'] = transformed['image']
         return sample
 
     def __repr__(self):
@@ -86,12 +86,12 @@ class RandomCrop:
     def __call__(self, sample):
         """Apply random crop to image and mask (if present)"""
         if 'mask' in sample:
-            transformed = self.transform(image=sample['img'], mask=sample['mask'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'], mask=sample['mask'])
+            sample['image'] = transformed['image']
             sample['mask'] = transformed['mask']
         else:
-            transformed = self.transform(image=sample['img'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'])
+            sample['image'] = transformed['image']
         return sample
 
     def __repr__(self):
@@ -114,12 +114,12 @@ class HorizontalFlip:
     def __call__(self, sample):
         """Apply horizontal flip to image and mask (if present)"""
         if 'mask' in sample:
-            transformed = self.transform(image=sample['img'], mask=sample['mask'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'], mask=sample['mask'])
+            sample['image'] = transformed['image']
             sample['mask'] = transformed['mask']
         else:
-            transformed = self.transform(image=sample['img'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'])
+            sample['image'] = transformed['image']
         return sample
 
     def __repr__(self):
@@ -142,12 +142,12 @@ class VerticalFlip:
     def __call__(self, sample):
         """Apply vertical flip to image and mask (if present)"""
         if 'mask' in sample:
-            transformed = self.transform(image=sample['img'], mask=sample['mask'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'], mask=sample['mask'])
+            sample['image'] = transformed['image']
             sample['mask'] = transformed['mask']
         else:
-            transformed = self.transform(image=sample['img'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'])
+            sample['image'] = transformed['image']
         return sample
 
     def __repr__(self):
@@ -183,7 +183,7 @@ class ColorJitter:
 
     def __call__(self, sample):
         """Apply color jitter to image only (not mask)"""
-        sample['img'] = self.transform(image=sample['img'])['image']
+        sample['image'] = self.transform(image=sample['image'])['image']
         return sample
 
     def __repr__(self):
@@ -210,12 +210,12 @@ class RandomRotate:
     def __call__(self, sample):
         """Apply rotation to image and mask (if present)"""
         if 'mask' in sample:
-            transformed = self.transform(image=sample['img'], mask=sample['mask'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'], mask=sample['mask'])
+            sample['image'] = transformed['image']
             sample['mask'] = transformed['mask']
         else:
-            transformed = self.transform(image=sample['img'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'])
+            sample['image'] = transformed['image']
         return sample
 
     def __repr__(self):
@@ -239,7 +239,7 @@ class Normalize:
 
     def __call__(self, sample):
         """Apply normalization to image only (not mask)"""
-        sample['img'] = self.transform(image=sample['img'])['image']
+        sample['image'] = self.transform(image=sample['image'])['image']
         return sample
 
     def __repr__(self):
@@ -260,12 +260,12 @@ class ToTensor:
     def __call__(self, sample):
         """Convert image and mask (if present) to tensors"""
         if 'mask' in sample:
-            transformed = self.transform(image=sample['img'], mask=sample['mask'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'], mask=sample['mask'])
+            sample['image'] = transformed['image']
             sample['mask'] = transformed['mask'].long()
         else:
-            transformed = self.transform(image=sample['img'])
-            sample['img'] = transformed['image']
+            transformed = self.transform(image=sample['image'])
+            sample['image'] = transformed['image']
         return sample
 
     def __repr__(self):
@@ -295,7 +295,7 @@ class RandomBrightnessContrast:
 
     def __call__(self, sample):
         """Apply brightness/contrast adjustment to image only"""
-        sample['img'] = self.transform(image=sample['img'])['image']
+        sample['image'] = self.transform(image=sample['image'])['image']
         return sample
 
     def __repr__(self):
@@ -320,7 +320,7 @@ class GaussianBlur:
 
     def __call__(self, sample):
         """Apply Gaussian blur to image only"""
-        sample['img'] = self.transform(image=sample['img'])['image']
+        sample['image'] = self.transform(image=sample['image'])['image']
         return sample
 
     def __repr__(self):

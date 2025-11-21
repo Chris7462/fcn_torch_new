@@ -19,7 +19,6 @@ class BaseDataset(Dataset):
         data_root: Root directory of dataset
         split: Split name ('train', 'val', 'test')
         processes: Transform pipeline config (list of dicts)
-        cfg: Global config object
 
     Example:
         >>> class MyDataset(BaseDataset):
@@ -32,7 +31,7 @@ class BaseDataset(Dataset):
         >>>         return {'img': img, 'mask': mask}
     """
 
-    def __init__(self, data_root, split, processes=None, cfg=None):
+    def __init__(self, data_root, split, processes=None):
         """
         Initialize base dataset.
 
@@ -40,9 +39,7 @@ class BaseDataset(Dataset):
             data_root: Root directory of dataset
             split: Split name (used to determine if training)
             processes: List of transform config dicts
-            cfg: Global config object
         """
-        self.cfg = cfg
         self.data_root = data_root
         self.split = split
         self.is_training = 'train' in split

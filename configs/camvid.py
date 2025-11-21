@@ -99,7 +99,7 @@ dataset = dict(
 
 # Training hyperparameters
 batch_size = 16
-workers = 4
+num_workers = 4
 #   num_classes = 11
 #   ignore_label = 255
 #   epochs = 200

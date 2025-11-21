@@ -23,7 +23,6 @@ class CamVid(BaseDataset):
         split_file: Path to split file (train.txt, val.txt, test.txt)
         dataset_info_path: Path to dataset_info.json
         processes: Transform pipeline config (list of dicts)
-        cfg: Global config object
 
     Example:
         >>> dataset = CamVid(
@@ -35,13 +34,12 @@ class CamVid(BaseDataset):
         >>>         dict(type='Resize', height=360, width=480),
         >>>         dict(type='Normalize', mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         >>>         dict(type='ToTensor')
-        >>>     ],
-        >>>     cfg=cfg
+        >>>     ]
         >>> )
     """
 
     def __init__(self, img_dir, label_dir, split_file, dataset_info_path,
-                 processes=None, cfg=None):
+                 processes=None):
         """
         Initialize CamVid dataset.
 
@@ -51,7 +49,6 @@ class CamVid(BaseDataset):
             split_file: Path to split file
             dataset_info_path: Path to dataset_info.json
             processes: Transform pipeline config
-            cfg: Global config object
         """
         self.img_dir = img_dir
         self.label_dir = label_dir
@@ -64,8 +61,7 @@ class CamVid(BaseDataset):
         super().__init__(
             data_root=img_dir,
             split=os.path.basename(split_file),
-            processes=processes,
-            cfg=cfg
+            processes=processes
         )
 
     def load_dataset_info(self, json_path):
@@ -157,7 +153,7 @@ class CamVid(BaseDataset):
 
         # Prepare sample dict
         sample = {
-            'img': image,
+            'image': image,
             'filename': filename
         }
 

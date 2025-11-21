@@ -10,7 +10,7 @@ from utils import Registry, build_from_cfg
 DATASETS = Registry('datasets')
 
 
-def build_dataset(split_cfg, cfg=None):
+def build_dataset(split_cfg):
     """
     Build dataset from config.
 
@@ -22,30 +22,30 @@ def build_dataset(split_cfg, cfg=None):
         Dataset instance
 
     Example:
-        >>> train_dataset = build_dataset(cfg.dataset.train, cfg)
+        >>> train_dataset = build_dataset(cfg.dataset.train)
     """
-    default_args = {'cfg': cfg} if cfg is not None else None
-    return build_from_cfg(split_cfg, DATASETS, default_args=default_args)
+    return build_from_cfg(split_cfg, DATASETS)
 
 
-def build_dataloader(split_cfg, cfg, is_train=True):
+def build_dataloader(split_cfg, batch_size, num_workers=4, is_train=True):
     """
     Build PyTorch DataLoader from config.
 
     Args:
         split_cfg: Dataset split config (e.g., cfg.dataset.train)
-        cfg: Global config object
-        is_train: Whether this is training data (affects shuffle)
+        batch_size: Batch size for DataLoader
+        num_workers: Number of worker processes (default: 4)
+        is_train: Whether this is training data (affects shuffle, drop_last)
 
     Returns:
         DataLoader instance
 
     Example:
-        >>> train_loader = build_dataloader(cfg.dataset.train, cfg, is_train=True)
-        >>> val_loader = build_dataloader(cfg.dataset.val, cfg, is_train=False)
+        >>> train_loader = build_dataloader(cfg.dataset.train, batch_size=16, num_workers=4, is_train=True)
+        >>> val_loader = build_dataloader(cfg.dataset.val, batch_size=16, num_workers=4, is_train=False)
     """
     # Build the dataset
-    dataset = build_dataset(split_cfg, cfg)
+    dataset = build_dataset(split_cfg)
 
     # Shuffle only for training
     shuffle = is_train
@@ -53,9 +53,9 @@ def build_dataloader(split_cfg, cfg, is_train=True):
     # Create DataLoader
     data_loader = torch.utils.data.DataLoader(
         dataset,
-        batch_size=cfg.batch_size,
+        batch_size=batch_size,
         shuffle=shuffle,
-        num_workers=cfg.workers,
+        num_workers=num_workers,
         pin_memory=True,
         drop_last=False
     )
